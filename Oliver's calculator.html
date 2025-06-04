@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!-- saved from url=(0065)file:///Users/ajohansson/Downloads/oliver_insulin_calculator.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insulin Calculator</title>
+  <link rel="apple-touch-icon" href="file:///Users/ajohansson/Downloads/app-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="InsulinCalc">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px; }
+    label { display: block; margin-top: 15px; }
+    input, select, button { padding: 8px; margin-top: 5px; }
+    input[type="number"] { width: 100px; }
+    select { width: 100%; }
+    .result { margin-top: 20px; font-size: 1.2em; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .section { margin-top: 30px; }
+    .delete-btn { color: red; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Insulin Calculator</h2>
+
+  <label for="meal">Meal</label>
+  <select id="meal"><option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option><option value="Snacks">Snacks</option><option value="Bedtime">Bedtime</option></select>
+
+  <label for="carbs">Carbs (grams)</label>
+  <input type="number" id="carbs">
+
+  <label for="bg">Blood Sugar (mg/dL)</label>
+  <input type="number" id="bg">
+
+  <div><button onclick="calculate()">Calculate Insulin</button></div>
+
+  <div class="result" id="result"></div>
+
+  <div class="section">
+    <h3>Edit Carb Ratios</h3>
+    <table id="carbRatiosTable"><tbody><tr><th>Meal</th><th>Ratio (1 unit / X g)</th></tr></tbody><tr>
+          <td>Breakfast</td>
+          <td><input type="number" value="30" onchange="carbRatios[&#39;Breakfast&#39;]=parseFloat(this.value)"></td>
+        </tr><tr>
+          <td>Lunch</td>
+          <td><input type="number" value="30" onchange="carbRatios[&#39;Lunch&#39;]=parseFloat(this.value)"></td>
+        </tr><tr>
+          <td>Dinner</td>
+          <td><input type="number" value="30" onchange="carbRatios[&#39;Dinner&#39;]=parseFloat(this.value)"></td>
+        </tr><tr>
+          <td>Snacks</td>
+          <td><input type="number" value="30" onchange="carbRatios[&#39;Snacks&#39;]=parseFloat(this.value)"></td>
+        </tr><tr>
+          <td>Bedtime</td>
+          <td><input type="number" value="30" onchange="carbRatios[&#39;Bedtime&#39;]=parseFloat(this.value)"></td>
+        </tr></table>
+  </div>
+
+  <div class="section">
+    <h3>Edit BG Adjustments</h3>
+    <table id="bgAdjustmentsTable"><tbody><tr><th>Min BG</th><th>Max BG</th><th>Units</th><th></th></tr></tbody><tr>
+          <td><input type="number" value="0" onchange="insulinAdjustment[0].min=parseFloat(this.value)"></td>
+          <td><input type="number" value="249.9" onchange="insulinAdjustment[0].max=parseFloat(this.value)"></td>
+          <td><input type="number" value="0" onchange="insulinAdjustment[0].units=parseFloat(this.value)"></td>
+          <td><span class="delete-btn" onclick="removeBGAdjustment(0)">✖</span></td>
+        </tr><tr>
+          <td><input type="number" value="250" onchange="insulinAdjustment[1].min=parseFloat(this.value)"></td>
+          <td><input type="number" value="349" onchange="insulinAdjustment[1].max=parseFloat(this.value)"></td>
+          <td><input type="number" value="0.5" onchange="insulinAdjustment[1].units=parseFloat(this.value)"></td>
+          <td><span class="delete-btn" onclick="removeBGAdjustment(1)">✖</span></td>
+        </tr><tr>
+          <td><input type="number" value="350" onchange="insulinAdjustment[2].min=parseFloat(this.value)"></td>
+          <td><input type="number" value="null" onchange="insulinAdjustment[2].max=parseFloat(this.value)"></td>
+          <td><input type="number" value="1" onchange="insulinAdjustment[2].units=parseFloat(this.value)"></td>
+          <td><span class="delete-btn" onclick="removeBGAdjustment(2)">✖</span></td>
+        </tr></table>
+    <button onclick="addBGAdjustment()">Add Row</button>
+  </div>
+
+  <div class="section">
+    <h3>Edit Rounding Rules</h3>
+    <table id="roundingRulesTable"><tbody><tr><th>Min</th><th>Max</th><th>Rounded</th><th></th></tr></tbody><tr>
+          <td><input type="number" value="0.1" onchange="roundingRules[0].min=parseFloat(this.value)"></td>
+          <td><input type="number" value="0.2" onchange="roundingRules[0].max=parseFloat(this.value)"></td>
+          <td><input type="number" value="0" onchange="roundingRules[0].rounded=parseFloat(this.value)"></td>
+          <td><span class="delete-btn" onclick="removeRoundingRule(0)">✖</span></td>
+        </tr><tr>
+          <td><input type="number" value="0.3" onchange="roundingRules[1].min=parseFloat(this.value)"></td>
+          <td><input type="number" value="0.7" onchange="roundingRules[1].max=parseFloat(this.value)"></td>
+          <td><input type="number" value="0.5" onchange="roundingRules[1].rounded=parseFloat(this.value)"></td>
+          <td><span class="delete-btn" onclick="removeRoundingRule(1)">✖</span></td>
+        </tr><tr>
+          <td><input type="number" value="0.8" onchange="roundingRules[2].min=parseFloat(this.value)"></td>
+          <td><input type="number" value="0.9" onchange="roundingRules[2].max=parseFloat(this.value)"></td>
+          <td><input type="number" value="1" onchange="roundingRules[2].rounded=parseFloat(this.value)"></td>
+          <td><span class="delete-btn" onclick="removeRoundingRule(2)">✖</span></td>
+        </tr></table>
+    <button onclick="addRoundingRule()">Add Row</button>
+  </div>
+
+  <div class="section">
+    <button onclick="saveInputs()">Save All Inputs</button>
+  </div>
+
+  <script>
+    let carbRatios = {};
+    let insulinAdjustment = [];
+    let roundingRules = [];
+
+    function loadDefaults() {
+      carbRatios = JSON.parse(localStorage.getItem('carbRatios') || '{}');
+      if (!Object.keys(carbRatios).length) {
+        carbRatios = { Breakfast: 30, Lunch: 30, Dinner: 30, Snacks: 30, Bedtime: 30 };
+      }
+
+      insulinAdjustment = JSON.parse(localStorage.getItem('insulinAdjustment') || '[]');
+      if (!insulinAdjustment.length) {
+        insulinAdjustment = [
+          { min: 0, max: 249.9, units: 0 },
+          { min: 250, max: 349, units: 0.5 },
+          { min: 350, max: Infinity, units: 1 }
+        ];
+      }
+
+      roundingRules = JSON.parse(localStorage.getItem('roundingRules') || '[]');
+      if (!roundingRules.length) {
+        roundingRules = [
+          { min: 0.1, max: 0.2, rounded: 0 },
+          { min: 0.3, max: 0.7, rounded: 0.5 },
+          { min: 0.8, max: 0.9, rounded: 1 }
+        ];
+      }
+
+      populateUI();
+    }
+
+    function populateUI() {
+      const mealSelect = document.getElementById('meal');
+      const mealTable = document.getElementById('carbRatiosTable');
+      mealSelect.innerHTML = '';
+      mealTable.innerHTML = '<tr><th>Meal</th><th>Ratio (1 unit / X g)</th></tr>';
+
+      for (const meal in carbRatios) {
+        const option = document.createElement('option');
+        option.value = meal;
+        option.textContent = meal;
+        mealSelect.appendChild(option);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${meal}</td>
+          <td><input type="number" value="${carbRatios[meal]}" onchange="carbRatios['${meal}']=parseFloat(this.value)" /></td>
+        `;
+        mealTable.appendChild(row);
+      }
+
+      const bgTable = document.getElementById('bgAdjustmentsTable');
+      bgTable.innerHTML = '<tr><th>Min BG</th><th>Max BG</th><th>Units</th><th></th></tr>';
+      insulinAdjustment.forEach((entry, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="number" value="${entry.min}" onchange="insulinAdjustment[${i}].min=parseFloat(this.value)" /></td>
+          <td><input type="number" value="${entry.max}" onchange="insulinAdjustment[${i}].max=parseFloat(this.value)" /></td>
+          <td><input type="number" value="${entry.units}" onchange="insulinAdjustment[${i}].units=parseFloat(this.value)" /></td>
+          <td><span class="delete-btn" onclick="removeBGAdjustment(${i})">✖</span></td>
+        `;
+        bgTable.appendChild(row);
+      });
+
+      const roundTable = document.getElementById('roundingRulesTable');
+      roundTable.innerHTML = '<tr><th>Min</th><th>Max</th><th>Rounded</th><th></th></tr>';
+      roundingRules.forEach((entry, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="number" value="${entry.min}" onchange="roundingRules[${i}].min=parseFloat(this.value)" /></td>
+          <td><input type="number" value="${entry.max}" onchange="roundingRules[${i}].max=parseFloat(this.value)" /></td>
+          <td><input type="number" value="${entry.rounded}" onchange="roundingRules[${i}].rounded=parseFloat(this.value)" /></td>
+          <td><span class="delete-btn" onclick="removeRoundingRule(${i})">✖</span></td>
+        `;
+        roundTable.appendChild(row);
+      });
+    }
+
+    function addBGAdjustment() {
+      insulinAdjustment.push({ min: 0, max: 0, units: 0 });
+      populateUI();
+    }
+
+    function removeBGAdjustment(index) {
+      insulinAdjustment.splice(index, 1);
+      populateUI();
+    }
+
+    function addRoundingRule() {
+      roundingRules.push({ min: 0, max: 0, rounded: 0 });
+      populateUI();
+    }
+
+    function removeRoundingRule(index) {
+      roundingRules.splice(index, 1);
+      populateUI();
+    }
+
+    function saveInputs() {
+      localStorage.setItem('carbRatios', JSON.stringify(carbRatios));
+      localStorage.setItem('insulinAdjustment', JSON.stringify(insulinAdjustment));
+      localStorage.setItem('roundingRules', JSON.stringify(roundingRules));
+      alert('Inputs saved!');
+    }
+
+    function roundInsulin(units) {
+      const fractional = units % 1;
+      for (let rule of roundingRules) {
+        if (fractional >= rule.min && fractional <= rule.max) {
+          return Math.floor(units) + rule.rounded;
+        }
+      }
+      return Math.round(units);
+    }
+
+    function calculate() {
+      const meal = document.getElementById('meal').value;
+      const carbs = parseFloat(document.getElementById('carbs').value);
+      const bg = parseFloat(document.getElementById('bg').value);
+
+      if (isNaN(carbs) || isNaN(bg)) {
+        document.getElementById('result').textContent = 'Please enter valid numbers.';
+        return;
+      }
+
+      const ratio = carbRatios[meal];
+      let units = carbs / ratio;
+
+      const bgAdj = insulinAdjustment.find(r => bg >= r.min && bg <= r.max);
+      if (bgAdj) units += bgAdj.units;
+
+      const finalUnits = roundInsulin(units);
+      document.getElementById('result').textContent = `Recommended Insulin Dose: ${finalUnits} units`;
+    }
+
+    loadDefaults();
+  </script>
+
+
+</body></html>
